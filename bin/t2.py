@@ -5,20 +5,12 @@ from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
 from pyclustering.utils.metric import type_metric, distance_metric
 from pyclustering.samples.definitions import FCPS_SAMPLES
 from pyclustering.utils import read_sample
-from config import *
 import osmnx as ox
 import networkx as nx
 import shapely
 import matplotlib.pyplot as plt
 
-def query(query_string: str) -> pd.DataFrame:
-    """Query."""
-    from google.cloud import bigquery
-    default_project_id = 'just-data-warehouse'
-    client = bigquery.Client(project=default_project_id)
-    job_config = bigquery.QueryJobConfig()
-    query_job = client.query(query_string, job_config=job_config)
-    return query_job.result().to_dataframe()
+
 
 #TODO Mirar como introducir metricas personalizadas en la libreria
 def metrica(centroide, punto):
@@ -37,6 +29,8 @@ df = query(qrestaurants)
 df['restaurant_coordinates'] = list(zip(df.address_latitude, df.address_longitude))              
 sample = [list(elem) for elem in  list(df['restaurant_coordinates']) ]
 
+
+#TODO buscar donde esta el error al implementar esta metrica con la libreria
 #metric = distance_metric(type_metric.USER_DEFINED, func=metrica)
 
 '''
@@ -91,11 +85,10 @@ sampling_space = np.asarray(sampling_space, dtype=np.float32)
 prediction = kmeans_instance.predict(sampling_space)
 
 pol = [[sampling_space[index] for index in [i for i, j in enumerate(prediction) if j == k]] for k in range(10)]
-points_in_0 = [i for i, j in enumerate(prediction) if j == 0]
-points_in_1 = [i for i, j in enumerate(prediction) if j == 1]
-pol0 = [sampling_space[index] for index in points_in_0]
+#points_in_0 = [i for i, j in enumerate(prediction) if j == 0]
+#pol0 = [sampling_space[index] for index in points_in_0]
 
-#funcion de envolvente convexa
+#envolvente
 
 
 hull = [shapely.geometry.MultiPoint().convex_hull.exterior._get_coords()]
