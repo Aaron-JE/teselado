@@ -1,16 +1,10 @@
-import pandas as pd
 import numpy as np
 from pyclustering.cluster.kmeans import kmeans, kmeans_visualizer
 from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
-from pyclustering.utils.metric import type_metric, distance_metric
-from pyclustering.samples.definitions import FCPS_SAMPLES
-from pyclustering.utils import read_sample
 import osmnx as ox
 import networkx as nx
 import shapely
 import matplotlib.pyplot as plt
-
-
 
 #TODO Mirar como introducir metricas personalizadas en la libreria
 def metrica(centroide, punto):
@@ -36,7 +30,7 @@ sample = [list(elem) for elem in  list(df['restaurant_coordinates']) ]
 '''
 Standard K-means
 '''
-def kmeans(points, nclusters):
+def mykmeans(points, nclusters):
     # Prepare initial centers using K-Means++ method.
     initial_centers = kmeans_plusplus_initializer(sample, 10).initialize()
     # Create instance of K-Means algorithm with prepared centers.
@@ -45,7 +39,7 @@ def kmeans(points, nclusters):
     kmeans_instance.process()
     kclusters = kmeans_instance.get_clusters()
     kcenters = kmeans_instance.get_centers()
-    return kclusters, kfinal_centers
+    return kclusters, kcenters
 # Visualize obtained results
 kmeans_visualizer.show_clusters(sample, clusters, final_centers)
 
@@ -53,9 +47,7 @@ kmeans_visualizer.show_clusters(sample, clusters, final_centers)
 C-means
 '''
 from pyclustering.cluster import cluster_visualizer
-from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
 from pyclustering.cluster.fcm import fcm
-from pyclustering.utils import read_sample
 
 def cmeans(points, nclusters= 3):
 # load list of points for cluster analysis
