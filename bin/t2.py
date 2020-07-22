@@ -30,18 +30,31 @@ sample = [list(elem) for elem in  list(df['restaurant_coordinates']) ]
 '''
 Standard K-means
 '''
-def mykmeans(points, nclusters):
-    # Prepare initial centers using K-Means++ method.
-    initial_centers = kmeans_plusplus_initializer(sample, 10).initialize()
-    # Create instance of K-Means algorithm with prepared centers.
-    kmeans_instance = kmeans(sample, initial_centers)
-    # Run cluster analysis and obtain results.
-    kmeans_instance.process()
-    kclusters = kmeans_instance.get_clusters()
-    kcenters = kmeans_instance.get_centers()
-    return kclusters, kcenters
+# def mykmeans(points, nclusters):
+#     # Prepare initial centers using K-Means++ method.
+#     initial_centers = kmeans_plusplus_initializer(sample, 10).initialize()
+#     # Create instance of K-Means algorithm with prepared centers.
+#     kmeans_instance = kmeans(sample, initial_centers)
+#     # Run cluster analysis and obtain results.
+#     kmeans_instance.process()
+#     kclusters = kmeans_instance.get_clusters()
+#     kcenters = kmeans_instance.get_centers()
+#     return kclusters, kcenters
+
+# re =mykmeans(sample, 2)
+
+
+# Prepare initial centers using K-Means++ method.
+initial_centers = kmeans_plusplus_initializer(sample, 10).initialize()
+# Create instance of K-Means algorithm with prepared centers.
+kmeans_instance = kmeans(sample, initial_centers)
+# Run cluster analysis and obtain results.
+kmeans_instance.process()
+kclusters = kmeans_instance.get_clusters()
+kcenters = kmeans_instance.get_centers()
+
 # Visualize obtained results
-kmeans_visualizer.show_clusters(sample, clusters, final_centers)
+kmeans_visualizer.show_clusters(sample, kclusters, kcenters)
 
 '''
 C-means
@@ -76,14 +89,14 @@ sampling_space = np.asarray(sampling_space, dtype=np.float32)
 
 prediction = kmeans_instance.predict(sampling_space)
 
-pol = [[sampling_space[index] for index in [i for i, j in enumerate(prediction) if j == k]] for k in range(10)]
-#points_in_0 = [i for i, j in enumerate(prediction) if j == 0]
-#pol0 = [sampling_space[index] for index in points_in_0]
+pol = [[list(sampling_space[index]) for index in [i for i, j in enumerate(prediction) if j == k]] for k in range(10)]
+
 
 #envolvente
 
+hull = [shapely.geometry.MultiPoint(pol[i]).convex_hull.exterior._get_coords() for i in pol]
 
-hull = [shapely.geometry.MultiPoint().convex_hull.exterior._get_coords()]
+hull = [shapely.geometry.MultiPoint(pol[1]).convex_hull.exterior._get_coords()]
 
 vertices = [list(v) for v in zip(hull.xy[0],hull.xy[1])]
 
