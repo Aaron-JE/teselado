@@ -7,7 +7,8 @@ import osmnx as ox
 import networkx as nx
 import shapely
 import matplotlib.pyplot as plt
-
+from infrastructure import *
+from config import *
 
 
 
@@ -101,7 +102,7 @@ sampling_space = np.asarray(sampling_space, dtype=np.float32)
 
 prediction = kmeans_instance.predict(sampling_space)
 
-
+#envolvente
 pol = [[list(sampling_space[index]) for index in [i for i, j in enumerate(prediction) if j == k]] for k in range(centers)]
 hull = [shapely.geometry.MultiPoint(pol[i]).convex_hull.exterior._get_coords() for i in range(len(pol))]
 
