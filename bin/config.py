@@ -4,22 +4,12 @@ with
                 SELECT order_id_local, driver_id, driver_assigned_latitude, driver_assigned_longitude, driver_assigned_time_stamp, 
                 handle_time, way_to_pick_up_timestamp, driver_completes_delivery_time_stamp 
                 FROM `just-data-warehouse.international_reporting.es_delivery_data_013_orders_detail` 
-                WHERE order_city in ('Santa Coloma de Gramenet',
-                                     'Badalona',
-                                     'Sant Adrià de Besòs',
-                                     'Barcelona',
-                                     'Hospitalet de Llobregat, L',
-                                     'Hospitalet de Llobregat')),
+               ),
  rest as(
          SELECT restaurant_key, address_latitude as rlat, address_longitude as rlon  
          FROM `just-data-warehouse.core_ecommerce.restaurant`
          WHERE country_code = 'ES' 
-         AND address_city in ('Santa Coloma de Gramenet', 
-                              'Badalona',
-                              'Sant Adrià de Besòs', 
-                              'Barcelona',	
-                              'Hospitalet de Llobregat, L',
-                              'Hospitalet de Llobregat'))
+
 SELECT orders.order_id_local , order_date.order_date_local, order_date.order_datetime_local, 
 geo_delivery.delivery_city, geo_delivery.order_latitude, 
  geo_delivery.order_longitude,  order_events.oiw_event_timestamp_utc, 
@@ -53,24 +43,15 @@ qrestaurants =  '''
                  WHERE country_code = 'ES' 
                  AND address_latitude is not null
                  AND address_longitude is not null
-                 AND address_latitude < 41.471783
-                 AND address_latitude > 41.357930
-                 AND address_longitude < 2.305203
-                 AND address_longitude > 2.014390
-                 AND address_city in ('Santa Coloma de Gramenet', 
-                              'Badalona',
-                              'Sant Adrià de Besòs', 
-                              'Barcelona',	
-                              'Hospitalet de Llobregat, L',
-                              'Hospitalet de Llobregat')
+                 AND address_city = 'Sevilla'
                  
-                 limit 100
+                 limit 10000
                 '''              
 
 
 orders = '''
 SELECT orders.order_id_local , order_date.order_date_local, order_date.order_datetime_local, 
-geo_delivery.delivery_city, geo_delivery.order_latitude, geo_delivery.order_longitude  
+geo_delivery.delivery_city, geo_delivery.order_latitude as address_latitude, geo_delivery.order_longitude  as address_longitude
  
 FROM `just-data-warehouse.opensource_local.orders_es`  
 WHERE 
@@ -78,11 +59,6 @@ order_status.order_status_good = TRUE
 AND order_date.order_date_local > '2020-01-01'
 AND geo_delivery.order_latitude is not null
 AND geo_delivery.order_longitude is not null 
-AND geo_delivery.delivery_city in ('Santa Coloma de Gramenet', 
-                              'Badalona',
-                              'Sant Adrià de Besòs', 
-                              'Barcelona',	
-                              'Hospitalet de Llobregat, L',
-                              'Hospitalet de Llobregat')
-LIMIT 10000
+AND geo_delivery.delivery_city = 'Sevilla'
+LIMIT 100000
 '''          

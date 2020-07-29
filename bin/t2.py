@@ -1,16 +1,15 @@
 import numpy as np
 from pyclustering.cluster.kmeans import kmeans, kmeans_visualizer
 from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
+from pyclustering.cluster import cluster_visualizer
+from pyclustering.cluster.fcm import fcm
 import osmnx as ox
 import networkx as nx
 import shapely
 import matplotlib.pyplot as plt
+from infrastructure import *
+from config import *
 
-#TODO Mirar como introducir metricas personalizadas en la libreria
-def metrica(centroide, punto):
-    nodo_centroide = ox.get_nearest_node(G, (centroide))
-    nodo_punto =  ox.get_nearest_node(G, (punto))
-    return nx.shortest_path_length(G, nodo_centroide, nodo_punto) 
 
 
 # G = ox.graph_from_bbox(41.471783, 41.357930, 2.014390, 2.305203)
@@ -19,7 +18,7 @@ def metrica(centroide, punto):
 # graph_map = ox.plot_graph_folium(G, popup_attribute='name', edge_width=2)
 # graph_map.save('mapa_grafo.html')
 
-df = query(qrestaurants)
+df = query(orders)
 df['restaurant_coordinates'] = list(zip(df.address_latitude, df.address_longitude))              
 sample = [list(elem) for elem in  list(df['restaurant_coordinates']) ]
 
@@ -45,7 +44,7 @@ Standard K-means
 
 
 # Prepare initial centers using K-Means++ method.
-initial_centers = kmeans_plusplus_initializer(sample, 10).initialize()
+initial_centers = kmeans_plusplus_initializer(sample, 3).initialize()
 # Create instance of K-Means algorithm with prepared centers.
 kmeans_instance = kmeans(sample, initial_centers)
 # Run cluster analysis and obtain results.
@@ -54,34 +53,48 @@ kclusters = kmeans_instance.get_clusters()
 kcenters = kmeans_instance.get_centers()
 
 # Visualize obtained results
-kmeans_visualizer.show_clusters(sample, kclusters, kcenters)
+#kmeans_visualizer.show_clusters(sample, kclusters, kcenters)
+visualizer = cluster_visualizer()
+visualizer.append_clusters(kclusters, sample)
+visualizer.append_cluster(kcenters, marker='*', markersize=10)
+visualizer.show()
 
 '''
 C-means
 '''
-from pyclustering.cluster import cluster_visualizer
-from pyclustering.cluster.fcm import fcm
 
-def cmeans(points, nclusters= 3):
-# load list of points for cluster analysis
-# initialize
-    initial_centers = kmeans_plusplus_initializer(sample, nclusters, kmeans_plusplus_initializer.FARTHEST_CENTER_CANDIDATE).initialize()
+
+# def cmeans(points, nclusters= 3):
+# # load list of points for cluster analysis
+# # initialize
+#     initial_centers = kmeans_plusplus_initializer(sample, nclusters, kmeans_plusplus_initializer.FARTHEST_CENTER_CANDIDATE).initialize()
+# # create instance of Fuzzy C-Means algorithm
+#     fcm_instance = fcm(sample, initial_centers)
+# # run cluster analysis and obtain results
+#     fcm_instance.process()
+#     clusters = fcm_instance.get_clusters()
+#     centers = fcm_instance.get_centers()
+#     membership = fcm_instance.get_membership()
+#     return clusters, centers, membership
+
+centers = 3
+initial_centers = kmeans_plusplus_initializer(sample, centers, kmeans_plusplus_initializer.FARTHEST_CENTER_CANDIDATE).initialize()
 # create instance of Fuzzy C-Means algorithm
-    fcm_instance = fcm(sample, initial_centers)
+fcm_instance = fcm(sample, initial_centers)
 # run cluster analysis and obtain results
-    fcm_instance.process()
-    clusters = fcm_instance.get_clusters()
-    centers = fcm_instance.get_centers()
-    membership = fcm_instance.get_membership()
-    return clusters, centers, membership
+fcm_instance.process()
+clusters = fcm_instance.get_clusters()
+centers = fcm_instance.get_centers()
+membership = fcm_instance.get_membership()
 
-# visualize clustering results
+
+# visualize c-clustering results
 visualizer = cluster_visualizer()
 visualizer.append_clusters(clusters, sample)
 visualizer.append_cluster(centers, marker='*', markersize=10)
 visualizer.show()
 
-#muestrea todo el espacion de la envolvente para conseguir las fronteras de decision a intervalos regulares
+#muestrea todo el espacio de la envolvente para conseguir las fronteras de decision a intervalos regulares 
 lat_sample = np.arange(41.372371, 41.441524, 0.001).tolist()
 lon_sample = np.arange(2.104855,2.231566, 0.001)
 sampling_space = [[x,y] for x in lat_sample for y in lon_sample]
@@ -89,17 +102,22 @@ sampling_space = np.asarray(sampling_space, dtype=np.float32)
 
 prediction = kmeans_instance.predict(sampling_space)
 
-pol = [[list(sampling_space[index]) for index in [i for i, j in enumerate(prediction) if j == k]] for k in range(10)]
-
-
 #envolvente
+pol = [[list(sampling_space[index]) for index in [i for i, j in enumerate(prediction) if j == k]] for k in range(centers)]
+hull = [shapely.geometry.MultiPoint(pol[i]).convex_hull.exterior._get_coords() for i in range(len(pol))]
 
-hull = [shapely.geometry.MultiPoint(pol[i]).convex_hull.exterior._get_coords() for i in pol]
 
-hull = [shapely.geometry.MultiPoint(pol[1]).convex_hull.exterior._get_coords()]
-
-vertices = [list(v) for v in zip(hull.xy[0],hull.xy[1])]
-
+for i in range(len(hull)):
+    vertices= []
+    vertices[i] = [list(v) for v in  zip(hull[i].xy[0],hull[i].xy[1])]
+ 
+for i in  range(len(hull)):
+    print(i)
+    poligonos = []
+    vertices = [ list(v) for v in  zip(hull[i].xy[0],hull[i].xy[1])]
+    print(vertices)
+    poligonos.append(vertices)
+    print(poligonos)
 
 plt.plot(hull.xy[1], hull.xy[0])
 
