@@ -7,7 +7,7 @@ Created on Sun Jul 12 20:05:44 2020
 
 import numpy as np
 
-class K_Means:
+class MyKMeans:
     
     """
     Class which implements K-Means algorithm with the required distance.

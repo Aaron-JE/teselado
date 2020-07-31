@@ -4,11 +4,8 @@ from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
 from pyclustering.cluster import cluster_visualizer
 from pyclustering.cluster.fcm import fcm
 import osmnx as ox
-import networkx as nx
 import shapely
 import matplotlib.pyplot as plt
-from infrastructure import *
-from config import *
 
 
 

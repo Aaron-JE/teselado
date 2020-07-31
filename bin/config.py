@@ -1,3 +1,11 @@
+LAT_MIN = 41.372371
+LAT_MAX = 41.441524
+
+LON_MIN = 2.104855
+LON_MAX = 2.231566
+
+STEP = 0.001
+
 full_data = '''
 with 
     delivery as (

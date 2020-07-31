@@ -1,11 +1,10 @@
-from infrastructure import query
-from MyKMeans import K_Means
+from MyKMeans import MyKMeans
 import numpy as np
-import shapely
 import matplotlib.pyplot as plt
 from matplotlib import style
-import folium
-from config import *
+import config as cf
+from google.cloud import bigquery
+import pandas as pd
 #import osmnx as ox
 
 
@@ -16,16 +15,41 @@ def query(query_string: str) -> pd.DataFrame:
     query_job = client.query(query_string, job_config=job_config)
     return query_job.result().to_dataframe()
 
-df = query(orders)
+def main():
+    df = query(cf.orders)
+    X = df[['address_latitude', 'address_longitude']].to_numpy()
+    
+    model = MyKMeans()
+    model.fit(X)
+    
+    df['restaurant_coordinates'] = list(zip(df.address_latitude, df.address_longitude))              
+    
+    lat_sample = np.arange(cf.LAT_MIN, cf.LAT_MAX, cf.STEP).tolist()
+    lon_sample = np.arange(cf.LON_MIN, cf.LON_MAX, cf.STEP)
+    sampling_space = [[x,y] for x in lat_sample for y in lon_sample]
+    
+    style.use('ggplot')
+    colors = ['blue', 'yellow','red']
+    for classification in model.classifications:
+        color = colors[classification]
+        for featureset in model.classifications[classification]:
+            plt.scatter(featureset[1], featureset[0], marker="x",color=color, s=150, linewidths=5)
+        
+    
+    for centroid in model.centroids:
+        plt.scatter(model.centroids[centroid][1], model.centroids[centroid][0], #imbecil
+                    marker="o", color="k", s=150, linewidths=5)
+        
+    plt.show() 
    
-
+if __name__ == '__main__':
+    main()
            
 #df['order_coordinates'] = list(zip(df.order_latitude, df.order_longitude))
 #df['restaurant_coordinates'] = list(zip(df.rlat, df.rlon))
 
 
 #X = df[['order_latitude', 'order_longitude']].to_numpy()
-X = df[['address_latitude', 'address_longitude']].to_numpy()
 
 
 '''
@@ -39,14 +63,7 @@ graph_map = ox.plot_graph_folium(G, popup_attribute='name', edge_width=2)
   
 
 # plt.scatter(*zip(*X))
-model = K_Means()
-model.fit(X)
 
-df['restaurant_coordinates'] = list(zip(df.address_latitude, df.address_longitude))              
-
-lat_sample = np.arange(41.372371, 41.441524, 0.001).tolist()
-lon_sample = np.arange(2.104855,2.231566, 0.001)
-sampling_space = [[x,y] for x in lat_sample for y in lon_sample]
 #sampling_space = np.asarray(sampling_space, dtype=np.float32)
 
 '''
@@ -92,19 +109,6 @@ vertices = [list(v) for v in zip(hull.xy[0],hull.xy[1])]
 plt.plot(hull.xy[1], hull.xy[0])
 '''
 
-style.use('ggplot')
-colors = ['blue', 'yellow','red']
-for classification in model.classifications:
-    color = colors[classification]
-    for featureset in model.classifications[classification]:
-        plt.scatter(featureset[1], featureset[0], marker="x",color=color, s=150, linewidths=5)
-    
-
-for centroid in model.centroids:
-    plt.scatter(model.centroids[centroid][1], model.centroids[centroid][0], #imbecil
-                marker="o", color="k", s=150, linewidths=5)
-    
-plt.show() 
 
 '''    
 mapBCN = folium.Map(location=[41.4469 ,2.2324 ],zoom_start = 10) 

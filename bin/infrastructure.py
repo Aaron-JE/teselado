@@ -8,9 +8,6 @@ import osmnx as ox
 import scipy.stats as st
 from google.cloud import bigquery
 
-
-
-
 #TODO Mirar como introducir metricas personalizadas en la libreria
 def metrica(centroide, punto):
     nodo_centroide = ox.get_nearest_node(G, (centroide))
