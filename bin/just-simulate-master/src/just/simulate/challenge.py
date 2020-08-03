@@ -1,0 +1,4 @@
+class Challenge:
+    """Challenge."""
+
+    pass
