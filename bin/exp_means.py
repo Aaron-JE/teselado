@@ -18,7 +18,7 @@ from config import *
 # graph_map = ox.plot_graph_folium(G, popup_attribute='name', edge_width=2)
 # graph_map.save('mapa_grafo.html')
 
-df = query(qrestaurants)
+df = query(orders)
 df['restaurant_coordinates'] = list(zip(df.address_latitude, df.address_longitude))              
 sample = [list(elem) for elem in  list(df['restaurant_coordinates']) ]
 
@@ -105,7 +105,7 @@ prediction = kmeans_instance.predict(sampling_space)
 #envolvente
 pol = [[list(sampling_space[index]) for index in [i for i, j in enumerate(prediction) if j == k]] for k in range(centers)]
 hull = [shapely.geometry.MultiPoint(pol[i]).convex_hull.exterior._get_coords() for i in range(len(pol))]
-
+#shapely  check intersection delauney triangu 
 
 for i in range(len(hull)):
     vertices= []

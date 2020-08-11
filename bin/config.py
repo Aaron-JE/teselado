@@ -45,7 +45,7 @@ qrestaurants =  '''
                  AND address_longitude is not null
                  AND address_city = 'Sevilla'
                  
-                 limit 10000
+                 limit 1000000000
                 '''              
 
 
